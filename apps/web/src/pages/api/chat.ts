@@ -2,9 +2,9 @@ import type { APIRoute } from "astro";
 import OpenAI from "openai";
 import {
   PERSONA_CONFIG,
-  getYouTubeVideo,
   type PersonaId,
 } from "@/lib/prompts";
+import { getYouTubeVideoLive } from "@/lib/youtube";
 
 export const prerender = false;
 
@@ -33,6 +33,8 @@ interface ChatRequestBody {
 
 export const POST: APIRoute = async ({ request }) => {
   const apiKey = process.env.OPENAI_API_KEY ?? import.meta.env.OPENAI_API_KEY;
+  const youtubeApiKey = process.env.YOUTUBE_API_KEY ?? import.meta.env.YOUTUBE_API_KEY;
+
   if (!apiKey) {
     console.error("[chat API] OPENAI_API_KEY is not set");
     return new Response(
@@ -124,15 +126,48 @@ export const POST: APIRoute = async ({ request }) => {
             });
 
             if (toolName === "getYouTubeVideo") {
-              const toolResult = getYouTubeVideo(input, persona);
+              let toolResult: string;
+
+              if (youtubeApiKey) {
+                // Live YouTube API call
+                const ytResult = await getYouTubeVideoLive(input, persona, youtubeApiKey);
+
+                if (ytResult.found) {
+                  toolResult = JSON.stringify({
+                    topic: input,
+                    persona,
+                    found: true,
+                    title: ytResult.top.title,
+                    url: ytResult.top.url,
+                    viewCount: ytResult.top.viewCount,
+                    allVideos: ytResult.all.map((v) => ({
+                      title: v.title,
+                      url: v.url,
+                      viewCount: v.viewCount,
+                    })),
+                  });
+                } else {
+                  toolResult = JSON.stringify({
+                    topic: input,
+                    persona,
+                    found: false,
+                    message: ytResult.message,
+                  });
+                }
+              } else {
+                // Fallback: no YouTube API key configured
+                toolResult = JSON.stringify({
+                  topic: input,
+                  persona,
+                  found: false,
+                  message: "YouTube API not configured — video coming soon!",
+                });
+              }
+
               sendEvent({ type: "tool_output", text: toolResult });
-              // Feed tool result back into message history
               fullMessages.push({
                 role: "user",
-                content: JSON.stringify({
-                  step: "TOOL_OUTPUT",
-                  output: toolResult,
-                }),
+                content: JSON.stringify({ step: "TOOL_OUTPUT", output: toolResult }),
               });
             }
             continue;
@@ -152,7 +187,6 @@ export const POST: APIRoute = async ({ request }) => {
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Unknown error occurred.";
-        console.error("[chat API error]", err); // shows in Vercel logs
         sendEvent({ type: "error", text: message });
       }
 

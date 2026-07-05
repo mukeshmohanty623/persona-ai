@@ -86,7 +86,13 @@ interface AssistantMessage {
   id: string;
   role: "assistant";
   content: string;
-  youtubeCard?: { title: string; url: string } | null;
+  youtubeCard?: {
+    found: boolean;
+    title?: string;
+    url?: string;
+    message?: string;
+    allVideos?: { title: string; url: string; viewCount: number }[];
+  } | null;
 }
 
 type ChatMessage = UserMessage | AssistantMessage;
@@ -95,7 +101,7 @@ interface ThinkingState {
   active: boolean;
   step: CoTStep | null;
   stepText: string;
-  youtubeCard: { title: string; url: string } | null;
+  youtubeCard: YouTubeCardData | null;
 }
 
 // ─────────────────────────────────────────────
@@ -120,18 +126,62 @@ const STEP_COLORS: Record<CoTStep, string> = {
 // YOUTUBE CARD
 // ─────────────────────────────────────────────
 
-function YouTubeCard({ title, url }: { title: string; url: string }) {
+interface YouTubeCardData {
+  found: boolean;
+  title?: string;
+  url?: string;
+  message?: string;
+  allVideos?: { title: string; url: string; viewCount: number }[];
+}
+
+function YouTubeCard({ data }: { data: YouTubeCardData }) {
+  if (!data.found) {
+    return (
+      <div className="mt-2 flex items-center gap-2 rounded-lg border border-dashed border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+        <PlayCircleIcon className="size-4 shrink-0 opacity-50" />
+        <span>{data.message ?? "Video coming soon!"}</span>
+      </div>
+    );
+  }
+
+  // Show top video + optional collapse for more
+  const extras = data.allVideos?.slice(1) ?? [];
+
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-muted"
-    >
-      <PlayCircleIcon className="size-4 shrink-0 text-red-500" />
-      <span className="min-w-0 truncate font-medium">{title}</span>
-      <ExternalLinkIcon className="ms-auto size-3.5 shrink-0 text-muted-foreground" />
-    </a>
+    <div className="mt-2 flex flex-col gap-1">
+      <a
+        href={data.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-muted"
+      >
+        <PlayCircleIcon className="size-4 shrink-0 text-red-500" />
+        <span className="min-w-0 flex-1 truncate font-medium">{data.title}</span>
+        <ExternalLinkIcon className="size-3.5 shrink-0 text-muted-foreground" />
+      </a>
+      {extras.length > 0 && (
+        <details className="group">
+          <summary className="cursor-pointer list-none px-1 text-xs text-muted-foreground hover:text-foreground">
+            +{extras.length} more video{extras.length > 1 ? "s" : ""}
+          </summary>
+          <div className="mt-1 flex flex-col gap-1">
+            {extras.map((v) => (
+              <a
+                key={v.url}
+                href={v.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors hover:bg-muted"
+              >
+                <PlayCircleIcon className="size-4 shrink-0 text-red-500/60" />
+                <span className="min-w-0 flex-1 truncate">{v.title}</span>
+                <ExternalLinkIcon className="size-3.5 shrink-0 text-muted-foreground" />
+              </a>
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
   );
 }
 
@@ -177,10 +227,7 @@ function ThinkingMessage({
                   {STEP_LABELS[step]}
                 </div>
                 {thinking.youtubeCard && (
-                  <YouTubeCard
-                    title={thinking.youtubeCard.title}
-                    url={thinking.youtubeCard.url}
-                  />
+                  <YouTubeCard data={thinking.youtubeCard} />
                 )}
                 <div className="flex gap-1.5">
                   <Skeleton className="h-3 w-24 rounded-sm" />
@@ -244,7 +291,7 @@ function useChatThread(persona: PersonaId) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let pendingYouTubeCard: { title: string; url: string } | null = null;
+      let pendingYouTubeCard: YouTubeCardData | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -273,10 +320,14 @@ function useChatThread(persona: PersonaId) {
           } else if (event.type === "tool_output") {
             try {
               const parsed = JSON.parse(event.text ?? "{}");
-              if (parsed.title && parsed.url) {
-                pendingYouTubeCard = { title: parsed.title, url: parsed.url };
-                setThinking((prev) => ({ ...prev, youtubeCard: pendingYouTubeCard }));
-              }
+              pendingYouTubeCard = {
+                found: parsed.found ?? false,
+                title: parsed.title,
+                url: parsed.url,
+                message: parsed.message,
+                allVideos: parsed.allVideos,
+              };
+              setThinking((prev) => ({ ...prev, youtubeCard: pendingYouTubeCard }));
             } catch { /* ignore */ }
           } else if (event.type === "output") {
             setMessages((prev) => [
@@ -501,10 +552,7 @@ export function PersonaChat() {
                                   <BubbleContent>
                                     <p className="whitespace-pre-wrap">{aMsg.content}</p>
                                     {aMsg.youtubeCard && (
-                                      <YouTubeCard
-                                        title={aMsg.youtubeCard.title}
-                                        url={aMsg.youtubeCard.url}
-                                      />
+                                      <YouTubeCard data={aMsg.youtubeCard} />
                                     )}
                                   </BubbleContent>
                                 </Bubble>
