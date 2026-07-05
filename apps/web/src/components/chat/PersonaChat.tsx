@@ -404,7 +404,7 @@ function ThemeToggle() {
           size="icon"
           aria-label="Toggle theme"
           onClick={toggle}
-          className="fixed right-4 top-4 z-50"
+          className="size-9"
         >
           {isDark ? <SunIcon /> : <MoonIcon />}
         </Button>
@@ -456,10 +456,15 @@ export function PersonaChat({ rateLimitPerDay = 20 }: { rateLimitPerDay?: number
 
   return (
     <TooltipProvider>
-      <ThemeToggle />
-      <div className="flex min-h-svh items-center justify-center bg-muted/30 p-4">
+      <div className="fixed right-4 top-4 z-50 flex items-center gap-2">
+        <span className="rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground shadow-sm">
+          {rateLimitPerDay} msg/day
+        </span>
+        <ThemeToggle />
+      </div>
+      <div className="flex min-h-svh items-start justify-center bg-muted/30 p-4 pt-16 sm:items-center sm:pt-4">
         <MessageScrollerProvider autoScroll>
-          <Card className="w-full max-w-lg gap-0" style={{ height: "min(680px, calc(100svh - 2rem))" }}>
+          <Card className="w-full max-w-lg gap-0" style={{ height: "min(680px, calc(100svh - 5rem))" }}>
             {/* Header */}
             <CardHeader className="gap-1 border-b">
               <CardTitle className="flex items-center gap-2.5">
@@ -663,9 +668,6 @@ export function PersonaChat({ rateLimitPerDay = 20 }: { rateLimitPerDay?: number
                   </InputGroupAddon>
                 </InputGroup>
               </form>
-              <p className="mt-1.5 text-center text-xs text-muted-foreground">
-                Free tier · {rateLimitPerDay} messages per IP per day
-              </p>
             </CardFooter>
           </Card>
         </MessageScrollerProvider>
