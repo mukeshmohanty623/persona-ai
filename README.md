@@ -181,3 +181,13 @@ npx shadcn@latest add <component> -c apps/web
 - **AI**: OpenAI GPT-4o (`gpt-4o`)
 - **Streaming**: Server-Sent Events (SSE) via Astro API routes
 - **Build**: Turborepo monorepo, npm workspaces
+
+## Chat screenshots
+### Piyush
+<img width="1260" height="2260" alt="23461" src="https://github.com/user-attachments/assets/5fd67864-797e-42b5-85b7-1637be8dedd5" />
+
+### Hitesh
+<img width="1260" height="2251" alt="23460" src="https://github.com/user-attachments/assets/7ddd4870-13d3-46c5-982e-ee16628b7e13" />
+
+
+
