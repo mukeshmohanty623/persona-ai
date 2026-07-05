@@ -74,12 +74,32 @@ npm run build
 
 ### Persona Data Collection
 
-The personas were constructed by studying publicly available content:
+The personas were built using a multi-step data pipeline grounded in real content:
+
+#### Step 1 — Video selection
+Representative YouTube videos were hand-picked from each creator's channels:
+- **Hitesh**: [ChaiCode](https://www.youtube.com/@chaiaurcode) and [Hitesh CodeLab](https://www.youtube.com/@HiteshCodeLab) — course intros, live sessions, React/Node/Python tutorials
+- **Piyush**: [piyushgargdev](https://www.youtube.com/@piyushgargdev) — DevOps deep-dives, system design talks, philosophical tech content
+
+#### Step 2 — Transcription
+The selected videos were transcribed to text (audio → transcript). Transcripts captured:
+- Exact phrasing, filler words, and sentence rhythm
+- Code walkthroughs and how each person explains technical concepts
+- Language switching patterns (English/Romanized Hindi mix for Hitesh; pure English + philosophical asides for Piyush)
+
+#### Step 3 — Pattern extraction
+The raw transcripts were analysed to extract:
+- Signature phrases and vocabulary ("theek hai", "are waah", "bhai" for Hitesh; "na?", "right?", cosmic analogies for Piyush)
+- Teaching structure (numbered steps, outcome-first vs. narrative-first)
+- Tone markers — when they use humor, when they get serious, how they handle "silly" questions
+
+#### Step 4 — System prompt generation
+The extracted patterns were distilled into structured system prompts using the following sections:
 
 | Source | What was studied |
 |---|---|
-| YouTube (ChaiCode, Hitesh Official) | Teaching cadence, code examples, vocabulary, Hindi/English mix |
-| YouTube (Piyush Garg) | Philosophical tangents, spiritual analogies, "thinking out loud" style |
+| YouTube transcripts (ChaiCode, Hitesh Official) | Teaching cadence, code examples, vocabulary, Hindi/English mix |
+| YouTube transcripts (Piyush Garg) | Philosophical tangents, spiritual analogies, "thinking out loud" style |
 | hitesh.ai, piyushgarg.dev | Bio, career milestones, stated beliefs on learning |
 | Twitter/X posts | Casual tone, opinions, signature phrases |
 | Course content (LCO, ChaiCode) | Technical depth, curriculum choices, project-first approach |
