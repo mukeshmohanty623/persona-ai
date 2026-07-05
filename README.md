@@ -190,4 +190,4 @@ npx shadcn@latest add <component> -c apps/web
 <img width="1260" height="2251" alt="23460" src="https://github.com/user-attachments/assets/7ddd4870-13d3-46c5-982e-ee16628b7e13" />
 
 
-
+## Demo link - [persona-ai](https://persona-ai-web-tan.vercel.app/)
