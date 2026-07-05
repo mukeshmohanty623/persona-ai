@@ -13,8 +13,8 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/node": "^11.0.2",
     "@astrojs/react": "^5",
+    "@astrojs/vercel": "^11.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/ui": "*",
