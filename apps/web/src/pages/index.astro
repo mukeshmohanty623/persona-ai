@@ -1,8 +1,10 @@
 ---
 import MainLayout from "@/layouts/main.astro"
 import { PersonaChat } from "@/components/chat/PersonaChat"
+
+const rateLimitPerDay = parseInt(import.meta.env.RATE_LIMIT_PER_DAY ?? "20", 10);
 ---
 
 <MainLayout title="Persona AI" description="Chat with Hitesh Choudhary and Piyush Garg — AI-powered persona chatbot">
-  <PersonaChat client:load />
+  <PersonaChat client:load rateLimitPerDay={rateLimitPerDay} />
 </MainLayout>

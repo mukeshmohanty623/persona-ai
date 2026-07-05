@@ -287,7 +287,13 @@ function useChatThread(persona: PersonaId) {
         body: JSON.stringify({ persona, messages: historyForApi }),
       });
 
-      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok || !response.body) {
+        if (response.status === 429) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error ?? "Daily message limit reached. Try again tomorrow!");
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -411,7 +417,7 @@ function ThemeToggle() {
 }
 
 // ─────────────────────────────────────────────
-export function PersonaChat() {
+export function PersonaChat({ rateLimitPerDay = 20 }: { rateLimitPerDay?: number }) {
   const [activePersona, setActivePersona] = React.useState<PersonaId>("hitesh");
 
   const hitesh = useChatThread("hitesh");
@@ -657,6 +663,9 @@ export function PersonaChat() {
                   </InputGroupAddon>
                 </InputGroup>
               </form>
+              <p className="mt-1.5 text-center text-xs text-muted-foreground">
+                Free tier · {rateLimitPerDay} messages per IP per day
+              </p>
             </CardFooter>
           </Card>
         </MessageScrollerProvider>

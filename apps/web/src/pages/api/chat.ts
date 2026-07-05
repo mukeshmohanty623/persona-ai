@@ -5,6 +5,7 @@ import {
   type PersonaId,
 } from "@/lib/prompts";
 import { getYouTubeVideoLive } from "@/lib/youtube";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const prerender = false;
 
@@ -60,6 +61,41 @@ export const POST: APIRoute = async ({ request }) => {
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
+
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  const tursoUrl = process.env.TURSO_DATABASE_URL ?? import.meta.env.TURSO_DATABASE_URL;
+  if (tursoUrl) {
+    try {
+      const ip =
+        request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+        request.headers.get("cf-connecting-ip") ??
+        "unknown";
+
+      const rl = await checkRateLimit(ip);
+      if (!rl.allowed) {
+        return new Response(
+          JSON.stringify({
+            error: `Daily limit reached. You can send ${rl.limit} messages per day. Try again tomorrow!`,
+            code: "RATE_LIMITED",
+            limit: rl.limit,
+            remaining: 0,
+          }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "X-RateLimit-Limit": String(rl.limit),
+              "X-RateLimit-Remaining": "0",
+            },
+          },
+        );
+      }
+    } catch (err) {
+      // Don't block the request if rate-limit check fails — just log
+      console.error("[chat API] Rate-limit check failed:", err);
+    }
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   const client = new OpenAI({ apiKey });
   const systemPrompt = PERSONA_CONFIG[persona].systemPrompt;
