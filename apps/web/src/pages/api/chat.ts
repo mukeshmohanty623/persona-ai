@@ -34,6 +34,7 @@ interface ChatRequestBody {
 export const POST: APIRoute = async ({ request }) => {
   const apiKey = import.meta.env.OPENAI_API_KEY;
   if (!apiKey) {
+    console.error("[chat API] OPENAI_API_KEY is not set");
     return new Response(
       JSON.stringify({ error: "OPENAI_API_KEY is not configured." }),
       { status: 500, headers: { "Content-Type": "application/json" } },
@@ -151,6 +152,7 @@ export const POST: APIRoute = async ({ request }) => {
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Unknown error occurred.";
+        console.error("[chat API error]", err); // shows in Vercel logs
         sendEvent({ type: "error", text: message });
       }
 
