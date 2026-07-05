@@ -1,13 +1,21 @@
 ---
 import "@workspace/ui/globals.css"
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const { title = "Persona AI", description = "AI-powered chat with Hitesh Choudhary and Piyush Garg" } = Astro.props
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Astro App</title>
+    <title>{title}</title>
   </head>
   <body>
     <slot />
