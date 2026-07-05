@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import ReactMarkdown from "react-markdown";
 import {
   ArrowUpIcon,
   ExternalLinkIcon,
@@ -550,10 +551,12 @@ export function PersonaChat() {
                                 <MessageHeader>{config.name}</MessageHeader>
                                 <Bubble variant="secondary" align="start">
                                   <BubbleContent>
-                                    <p className="whitespace-pre-wrap">{aMsg.content}</p>
-                                    {aMsg.youtubeCard && (
-                                      <YouTubeCard data={aMsg.youtubeCard} />
-                                    )}
+                                   <div className="prose prose-sm dark:prose-invert max-w-none break-words [&_a]:text-blue-500 [&_a]:underline [&_a:hover]:text-blue-600 [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0">
+                                     <ReactMarkdown>{aMsg.content}</ReactMarkdown>
+                                   </div>
+                                   {aMsg.youtubeCard && (
+                                     <YouTubeCard data={aMsg.youtubeCard} />
+                                   )}
                                   </BubbleContent>
                                 </Bubble>
                               </MessageContent>
