@@ -1,6 +1,5 @@
 {
-  "buildCommand": "npx turbo build",
-  "outputDirectory": "apps/web/dist",
+  "buildCommand": "npx turbo build --filter=web",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": null
 }
